@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Schere · Stein · Papier · Echse · Spock</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+
+  <body
+    class="bg-gray-900 text-white min-h-screen flex flex-col items-center justify-center p-6"
+  >
+    <h1 class="text-xl sm:text-3xl font-bold mb-2 text-center">
+      Schere · Stein · Papier · Echse · Spock
+    </h1>
+    <p class="text-gray-400 mb-10 text-sm text-center">Wähle deinen Zug!</p>
+
+    <!-- ── Auswahlbuttons ── -->
+    <div id="move-buttons" class="flex flex-wrap justify-center gap-3 sm:gap-4">
+      <button
+        onclick="play('Stein')"
+        class="flex flex-col items-center gap-2 bg-gray-800 hover:bg-gray-700 border-2 border-gray-600 hover:border-gray-400 active:scale-95 rounded-xl p-3 sm:p-4 transition-all w-24 sm:w-28"
+      >
+        <img src="Stein.png" alt="Stein" class="w-16 h-16 object-contain" />
+        <span class="text-xs sm:text-sm font-semibold">Stein</span>
+      </button>
+
+      <button
+        onclick="play('Papier')"
+        class="flex flex-col items-center gap-2 bg-gray-800 hover:bg-gray-700 border-2 border-gray-600 hover:border-gray-400 active:scale-95 rounded-xl p-3 sm:p-4 transition-all w-24 sm:w-28"
+      >
+        <img src="Papier.png" alt="Papier" class="w-16 h-16 object-contain" />
+        <span class="text-xs sm:text-sm font-semibold">Papier</span>
+      </button>
+
+      <button
+        onclick="play('Schere')"
+        class="flex flex-col items-center gap-2 bg-gray-800 hover:bg-gray-700 border-2 border-gray-600 hover:border-gray-400 active:scale-95 rounded-xl p-3 sm:p-4 transition-all w-24 sm:w-28"
+      >
+        <img src="Schere.png" alt="Schere" class="w-16 h-16 object-contain" />
+        <span class="text-xs sm:text-sm font-semibold">Schere</span>
+      </button>
+
+      <button
+        onclick="play('Echse')"
+        class="flex flex-col items-center gap-2 bg-gray-800 hover:bg-gray-700 border-2 border-gray-600 hover:border-gray-400 active:scale-95 rounded-xl p-3 sm:p-4 transition-all w-24 sm:w-28"
+      >
+        <img src="Echse.png" alt="Echse" class="w-16 h-16 object-contain" />
+        <span class="text-xs sm:text-sm font-semibold">Echse</span>
+      </button>
+
+      <button
+        onclick="play('Spock')"
+        class="flex flex-col items-center gap-2 bg-gray-800 hover:bg-gray-700 border-2 border-gray-600 hover:border-gray-400 active:scale-95 rounded-xl p-3 sm:p-4 transition-all w-24 sm:w-28"
+      >
+        <img src="Spock.png" alt="Spock" class="w-16 h-16 object-contain" />
+        <span class="text-xs sm:text-sm font-semibold">Spock</span>
+      </button>
+    </div>
+
+    <!-- ── Ergebnisbereich (anfangs versteckt) ── -->
+    <div
+      id="result-area"
+      style="display: none"
+      class="flex-col items-center gap-6"
+    >
+      <!-- Vergleich: Spieler vs. Computer -->
+      <div
+        class="flex flex-col sm:flex-row items-center gap-6 sm:gap-12 bg-gray-800 rounded-2xl p-6 sm:p-8"
+      >
+        <div class="flex flex-col items-center gap-2">
+          <span class="text-xs text-gray-400 uppercase tracking-widest"
+            >Du</span
+          >
+          <img id="player-img" src="" alt="" class="w-16 h-16 object-contain" />
+          <span id="player-label" class="text-sm font-semibold"></span>
+        </div>
+
+        <span class="text-2xl font-bold text-gray-500">VS</span>
+
+        <div class="flex flex-col items-center gap-2">
+          <span class="text-xs text-gray-400 uppercase tracking-widest"
+            >Computer</span
+          >
+          <img
+            id="computer-img"
+            src=""
+            alt=""
+            class="w-16 h-16 object-contain"
+          />
+          <span id="computer-label" class="text-sm font-semibold"></span>
+        </div>
+      </div>
+
+      <!-- Ergebnis & Begründung -->
+      <p
+        id="result-text"
+        class="text-2xl sm:text-3xl font-bold text-center"
+      ></p>
+      <p
+        id="result-reason"
+        class="text-gray-400 text-sm italic text-center"
+      ></p>
+
+      <!-- Nochmal spielen -->
+      <button
+        onclick="resetGame()"
+        class="mt-2 bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-bold py-2 px-8 rounded-xl transition-all"
+      >
+        🔄 Nochmal spielen
+      </button>
+    </div>
+
+    <script>
+      const validMoves = ["Schere", "Stein", "Papier", "Echse", "Spock"];
+
+      // Bilddateien pro Zug
+      const moveImage = {
+        Stein: "Stein.png",
+        Papier: "Papier.png",
+        Schere: "Schere.png",
+        Echse: "Echse.png",
+        Spock: "Spock.png",
+      };
+
+      // Alle 10 Gewinnkombinationen mit Begründung
+      const winsAgainst = {
+        Stein: [
+          { move: "Schere", reason: "Stein schlägt Schere" },
+          { move: "Echse", reason: "Stein zerquetscht Echse" },
+        ],
+        Papier: [
+          { move: "Stein", reason: "Papier bedeckt Stein" },
+          { move: "Spock", reason: "Papier widerlegt Spock" },
+        ],
+        Schere: [
+          { move: "Papier", reason: "Schere schneidet Papier" },
+          { move: "Echse", reason: "Schere köpft Echse" },
+        ],
+        Echse: [
+          { move: "Spock", reason: "Echse vergiftet Spock" },
+          { move: "Papier", reason: "Echse frisst Papier" },
+        ],
+        Spock: [
+          { move: "Schere", reason: "Spock zerstört Schere" },
+          { move: "Stein", reason: "Spock verdampft Stein" },
+        ],
+      };
+
+      function play(playerMove) {
+        const computerMove =
+          validMoves[Math.floor(Math.random() * validMoves.length)];
+
+        let result, reason, colorClass;
+
+        if (playerMove === computerMove) {
+          result = "Unentschieden! 🤝";
+          reason = "Gleicher Zug – Niemand gewinnt.";
+          colorClass = "text-yellow-400";
+        } else if (
+          winsAgainst[playerMove].some((w) => w.move === computerMove)
+        ) {
+          result = "Du gewinnst! 🎉";
+          reason = winsAgainst[playerMove].find(
+            (w) => w.move === computerMove,
+          ).reason;
+          colorClass = "text-green-400";
+        } else {
+          result = "Du verlierst! 😔";
+          reason = winsAgainst[computerMove].find(
+            (w) => w.move === playerMove,
+          ).reason;
+          colorClass = "text-red-400";
+        }
+
+        // Bilder & Labels aktualisieren
+        const playerImg = document.getElementById("player-img");
+        playerImg.src = moveImage[playerMove];
+        playerImg.alt = playerMove;
+        document.getElementById("player-label").textContent = playerMove;
+
+        const computerImg = document.getElementById("computer-img");
+        computerImg.src = moveImage[computerMove];
+        computerImg.alt = computerMove;
+        document.getElementById("computer-label").textContent = computerMove;
+
+        // Ergebnis anzeigen
+        const resultEl = document.getElementById("result-text");
+        resultEl.textContent = result;
+        resultEl.className = `text-2xl sm:text-3xl font-bold text-center ${colorClass}`;
+        document.getElementById("result-reason").textContent = reason;
+
+        // UI-Zustand wechseln
+        document.getElementById("move-buttons").style.display = "none";
+        document.getElementById("result-area").style.display = "flex";
+      }
+
+      function resetGame() {
+        document.getElementById("move-buttons").style.display = "";
+        document.getElementById("result-area").style.display = "none";
+      }
+    </script>
+  </body>
+</html>
